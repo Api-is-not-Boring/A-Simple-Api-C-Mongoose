@@ -1,6 +1,6 @@
 #include "router.h"
 
-static size_t print_stat(mg_pfn_t out, void *ptr, va_list *ap) {
+static size_t print_stats(mg_pfn_t out, void *ptr, va_list *ap) {
     struct mg_connection *c = va_arg(*ap, struct mg_connection*);
     const char *comma = "";
     size_t n = 0;
@@ -18,6 +18,31 @@ static size_t print_stat(mg_pfn_t out, void *ptr, va_list *ap) {
     return n;
 }
 
+static int find_endpoint_index(struct mg_str *endpoint,const char *v[]) {
+    for (int i = 0; i < sizeof(&v) / sizeof(*v[0]); i++) {
+        if (mg_vcmp(endpoint, v[i]) == 0) {
+            return i;
+        }
+    }
+    return -1;
+}
+
+static void api_v1(struct mg_connection *c, struct mg_http_message *hm){
+    struct mg_str endpoint[1];
+    mg_match(hm->uri, API_V1, endpoint);
+    switch (find_endpoint_index(&endpoint[0], v1_endpoint)) {
+        case ping:
+            mg_http_reply(c, 200, JSON_TYPE, "{%Q:%Q}", "message", "pong");
+            break;
+        case stats:
+            mg_http_reply(c, 200, JSON_TYPE, "{%Q:[%M]}", "connections", print_stats, c);
+            break;
+        default:
+            mg_http_reply(c, 404, JSON_TYPE, "{%Q:\"%s\"}", "status", "404 Not found");
+            break;
+    }
+}
+
 void router(struct mg_connection *c, int event, void *event_data, void *router_data) {
     if (event == MG_EV_HTTP_MSG) {
         struct mg_http_message *hm = (struct mg_http_message *) event_data;
@@ -25,11 +50,8 @@ void router(struct mg_connection *c, int event, void *event_data, void *router_d
                 (int) hm->uri.len, hm->uri.ptr,
                 (int) hm->body.len, hm->body.ptr));
 
-        if (mg_http_match_uri(hm, "/api/v1/stats")) {
-            if (mg_strstr(hm->uri, mg_str("stat"))) {
-                MG_DEBUG(("URI : %s", mg_url_uri(hm->uri.ptr)));
-            }
-            mg_http_reply(c, 200, JSON_TYPE, "[%M]", print_stat, c);
+        if (mg_http_match_uri(hm, "/api/v1/*")) {
+            api_v1(c, hm);
         } else if (mg_http_match_uri(hm, "/api/v2/*")) {
             if (hm->query.len > 0) {
                 MG_DEBUG(
@@ -39,7 +61,7 @@ void router(struct mg_connection *c, int event, void *event_data, void *router_d
             mg_http_reply(c, 200, JSON_TYPE, "%s\n", json);
             free(json);
         } else {
-            mg_http_reply(c, 404, JSON_TYPE, "{%Q:\"%s\"}", "status", "Not found");
+            mg_http_reply(c, 404, JSON_TYPE, "{%Q:\"%s\"}", "status", "404 Not found");
         }
     }
     (void) router_data;
