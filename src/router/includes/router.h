@@ -3,16 +3,27 @@
 
 #include "mongoose.h"
 
-#define JSON_TYPE "Content-Type: application/json; charset=utf-8\r\n"
+#define GENERATE_ENUM(ENUM) ENUM,
+#define GENERATE_STRING(STRING) #STRING,
+
+#define FOREACH_HTTP_METHOD(METHOD) \
+    METHOD(GET) \
+    METHOD(POST) \
+    METHOD(PUT) \
+    METHOD(DELETE) \
+
+typedef enum http_method {
+    FOREACH_HTTP_METHOD(GENERATE_ENUM)
+} http_method_t;
+
+static const char *http_method_str[] = {
+    FOREACH_HTTP_METHOD(GENERATE_STRING)
+};
+
 #define API_V1 mg_str("/api/v1/*")
 #define FOREACH_V1_ENDPOINT(ENDPOINT) \
     ENDPOINT(ping)               \
     ENDPOINT(stats)                   \
-
-#define GENERATE_ENUM(ENUM) ENUM,
-#define GENERATE_STRING(STRING) #STRING,
-
-static const char *s_http_addr = "http://0.0.0.0:8000";
 
 typedef enum v1_enum {
     FOREACH_V1_ENDPOINT(GENERATE_ENUM)
@@ -21,6 +32,10 @@ typedef enum v1_enum {
 static const char *v1_endpoint[] = {
         FOREACH_V1_ENDPOINT(GENERATE_STRING)
 };
+
+#define JSON_TYPE "Content-Type: application/json; charset=utf-8\r\n"
+
+static const char *s_http_addr = "http://0.0.0.0:8000";
 
 void router(struct mg_connection *c, int event, void *event_data, void *router_data);
 

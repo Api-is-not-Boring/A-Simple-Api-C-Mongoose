@@ -18,7 +18,7 @@ int main(void) {
                 s_http_addr));
         exit(EXIT_FAILURE);
     }
-    MG_INFO(("Mongoose version : v%s", MG_VERSION));
+    MG_INFO(("Mongoose version : %s", MG_VERSION));
     MG_INFO(("Listening on     : %s", s_http_addr));
     while (s_signo == 0) mg_mgr_poll(&mgr, 1000);                   // Infinite event loop
     mg_mgr_free(&mgr);
