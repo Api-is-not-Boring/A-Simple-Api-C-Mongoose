@@ -16,14 +16,15 @@ typedef enum http_method {
     FOREACH_HTTP_METHOD(GENERATE_ENUM)
 } http_method_t;
 
-static const char *http_method_str[] = {
+static const char *http_method[] = {
     FOREACH_HTTP_METHOD(GENERATE_STRING)
 };
 
 #define API_V1 mg_str("/api/v1/*")
 #define FOREACH_V1_ENDPOINT(ENDPOINT) \
     ENDPOINT(ping)                   \
-    ENDPOINT(info)                   \
+    ENDPOINT(info)                    \
+    ENDPOINT(connections)              \
 
 typedef enum v1_enum {
     FOREACH_V1_ENDPOINT(GENERATE_ENUM)
