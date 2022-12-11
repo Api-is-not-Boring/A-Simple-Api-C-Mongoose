@@ -1,27 +1,32 @@
 #include <signal.h>
+#include "model.h"
 #include "router.h"
 
+
 // Handle interrupts, like Ctrl-C
-static int s_signo;
-static void signal_handler(int signo) {
-    s_signo = signo;
+volatile sig_atomic_t s_signum;
+static void signal_handler(int signum) {
+    s_signum = signum;
 }
 
 int main(void) {
     struct mg_mgr mgr;                            // Event manager
+    sqlite3 *db;                                     // Database
     signal(SIGINT, signal_handler);
     signal(SIGTERM, signal_handler);
-    mg_log_set(MG_LL_DEBUG);                      // Set log level
+    mg_log_set(MG_LL_INFO);                      // Set log level
+    db_init(&db);                                  // Initialize database
     mg_mgr_init(&mgr);                            // Initialise event manager
-    if (mg_http_listen(&mgr, s_http_addr, router, &mgr) == NULL) {
-        MG_ERROR(("Cannot listen on %s. Use http://ADDR:PORT or :PORT",
-                s_http_addr));
+    if (mg_http_listen(&mgr, s_http_addr, router, db) == NULL) {
+        MG_ERROR(("Cannot listen on %s.", s_http_addr));
+        db_close(db);
         exit(EXIT_FAILURE);
     }
     MG_INFO(("Mongoose version : %s", MG_VERSION));
     MG_INFO(("Listening on     : %s", s_http_addr));
-    while (s_signo == 0) mg_mgr_poll(&mgr, 1000);                   // Infinite event loop
+    while (!s_signum) mg_mgr_poll(&mgr, 1000);                   // Infinite event loop
+    db_close(db);
     mg_mgr_free(&mgr);
-    MG_INFO(("Exiting on signal %d", s_signo));
+    MG_INFO(("Exiting on signal %d", s_signum));
     return 0;
 }

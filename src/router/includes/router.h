@@ -22,8 +22,8 @@ static const char *http_method_str[] = {
 
 #define API_V1 mg_str("/api/v1/*")
 #define FOREACH_V1_ENDPOINT(ENDPOINT) \
-    ENDPOINT(ping)               \
-    ENDPOINT(stats)                   \
+    ENDPOINT(ping)                   \
+    ENDPOINT(info)                   \
 
 typedef enum v1_enum {
     FOREACH_V1_ENDPOINT(GENERATE_ENUM)
@@ -33,6 +33,7 @@ static const char *v1_endpoint[] = {
         FOREACH_V1_ENDPOINT(GENERATE_STRING)
 };
 
+#define SERVER "Server: Mongoose\r\n"
 #define JSON_TYPE "Content-Type: application/json; charset=utf-8\r\n"
 
 static const char *s_http_addr = "http://0.0.0.0:8000";
