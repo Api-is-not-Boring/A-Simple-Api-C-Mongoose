@@ -29,7 +29,8 @@ jobs:
     - name: Build
       # Build your program with the given configuration
       run: cmake --build ${{github.workspace}}/build --target A_Simple_Api_C_Mongoose
-      
+ 
+ jobs:
   automated-api-tests:
     runs-on: ubuntu-latest
     steps:
