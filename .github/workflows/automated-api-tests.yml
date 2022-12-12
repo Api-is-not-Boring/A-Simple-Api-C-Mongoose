@@ -31,7 +31,7 @@ jobs:
       run: cmake --build ${{github.workspace}}/build --target A_Simple_Api_C_Mongoose
       
     - name: Run Api
-      run: ./${{github.workspace}}/build/src/A_Simple_Api_C_Mongoose
+      run: ${{github.workspace}}/build/src/A_Simple_Api_C_Mongoose
  
     - name: Install Postman CLI
       run: |
