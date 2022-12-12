@@ -78,7 +78,7 @@ static void api_v1(struct mg_connection *c, struct mg_http_message *hm){
             break;
         default:
             mg_http_reply(c, 404, print_header(), "{%Q:\"%s\"}",
-                          "status", "404 Not found");
+                          "status", "[v1] -> 404 Not found");
             break;
     }
 }
@@ -111,15 +111,15 @@ static void api_v2(struct mg_connection *c, struct mg_http_message *hm, sqlite3 
             // Response for API v2 from Query Parameter =======================================================
             v2_get_car_with_query:
             mg_http_reply(c, 200, print_header(), "{%Q:%Q,%M}",
-                          "method", "GET with Query Parameter",
+                          "method", "[v2] -> GET with Query Parameter",
                           db_get_car_by_id, db, id);
             v2_update_car_with_query:
             mg_http_reply(c, 200, print_header(), "{%Q:%Q,%M}",
-                          "method", "PUT with JSON in Path Parameter",
+                          "method", "[v2] -> PUT with JSON in Path Parameter",
                           db_get_car_by_id, db, id);
             v2_delete_car_with_query:
             mg_http_reply(c, 200, print_header(), "{%Q:%Q,%Q:%d,%Q:%M}",
-                          "method", "DELETE with Query Parameter",
+                          "method", "[v2] -> DELETE with Query Parameter",
                           "deleted", id,
                           "total", db_count_all_cars, db);
 
@@ -152,7 +152,7 @@ static void api_v2(struct mg_connection *c, struct mg_http_message *hm, sqlite3 
         // Response for API v2 from Path Parameter ===========================================================
         v2_get_car_with_path:
         mg_http_reply(c, 200, print_header(), "{%Q:%Q,%M}",
-                      "method", "GET with Path Parameter",
+                      "method", "[v2] -> GET with Path Parameter",
                       db_get_car_by_id, db, id);
         return;
         v2_update_car_with_path:
@@ -161,14 +161,14 @@ static void api_v2(struct mg_connection *c, struct mg_http_message *hm, sqlite3 
             long price = mg_json_get_long(hm->body, "$.price", 0);
             if (db_update_car(db, id, name, (int) price)) {
                 mg_http_reply(c, 200, print_header(), "{%Q:%Q,%M}",
-                              "method", "PUT with JSON in Path Parameter",
+                              "method", "[v2] -> PUT with JSON in Path Parameter",
                               db_get_car_by_id, db, id);
             } else goto v2_internal_error;
         } else goto v2_bad_request;
         v2_delete_car_with_path:
         if (db_delete_car(db, id)) {
             mg_http_reply(c, 200, print_header(), "{%Q:%Q,%Q:%d,%Q:%M}",
-                          "method", "DELETE with Path Parameter",
+                          "method", "[v2] -> DELETE with Path Parameter",
                           "deleted_id", id,
                           "total", db_count_all_cars, db);
         } else goto v2_internal_error;
@@ -187,7 +187,7 @@ static void api_v2(struct mg_connection *c, struct mg_http_message *hm, sqlite3 
         if (db_create_car(db, name,(int) price)) {
             int last_id = (int) sqlite3_last_insert_rowid(db);
             mg_http_reply(c, 201, print_header(), "{%Q:%Q,%M}",
-                          "method", "POST with JSON",
+                          "method", "[v2] -> POST with JSON",
                           db_get_car_by_id, db, last_id);
         } else goto v2_bad_request;
     } else goto v2_bad_request;
@@ -199,7 +199,7 @@ static void api_v2(struct mg_connection *c, struct mg_http_message *hm, sqlite3 
         long price = mg_json_get_long(hm->body, "$.price", 0);
         if (db_update_car(db, id, name, (int) price)) {
             mg_http_reply(c, 200, print_header(), "{%Q:%Q,%M}",
-                          "method", "PUT with JSON",
+                          "method", "[v2] -> PUT with JSON",
                           db_get_car_by_id, db, id);
         } else goto v2_internal_error;
     } else goto v2_bad_request;
@@ -207,58 +207,75 @@ static void api_v2(struct mg_connection *c, struct mg_http_message *hm, sqlite3 
     // Error Response for API v2 ==============================================================================
     v2_bad_request:
     mg_http_reply(c, 400, print_header(),
-                  "{%Q:%Q}", "status", "400 Bad request");
+                  "{%Q:%Q}", "status", "[v2] -> 400 Bad request");
     return;
     v2_method_not_allowed:
     mg_http_reply(c, 405, print_header(),
-                  "{%Q:%Q}", "status", "405 Method not allowed");
+                  "{%Q:%Q}", "status", "[v2] -> 405 Method not allowed");
     return;
     v2_not_found:
     mg_http_reply(c, 404, print_header(),
-                  "{%Q:%Q}", "status", "404 Not found");
+                  "{%Q:%Q}", "status", "[v2] -> 404 Not found");
     return;
     v2_internal_error:
     mg_http_reply(c, 500, print_header(),
-                  "{%Q:%Q}", "status", "500 Internal server error");
+                  "{%Q:%Q}", "status", "[v2] -> 500 Internal server error");
 }
 
 void api_v3(struct mg_connection *c, struct mg_http_message *hm, sqlite3 *db) {
     struct mg_str endpoint[1];
     mg_match(hm->uri, API_V3, endpoint);
+    struct mg_http_part part;
+    size_t ofs = 0;
+    char user[256], pass[256];
+    mg_http_creds(hm, user, sizeof(user), pass, sizeof(pass));
     switch (find_enum_index(&endpoint[0], v3_endpoint)) {
         case auth:
-            if (!mg_vcasecmp(&hm->method, "GET")) {
-                mg_http_reply(c, 200, print_header(), "{%Q:%Q}",
-                              "message", "Login with Post Request");
-            } else {
-                char *username, *password;
-                struct mg_http_part part;
-                size_t ofs = 0;
-                while ((ofs = mg_http_next_multipart(hm->body, ofs, &part)) > 0) {
-                    if (!mg_vcmp(&part.name, "username")) {
-                        username = mg_mprintf("%.*s", (int) part.body.len, part.body.ptr);
-                        MG_INFO(("User: [%.*s]", (int) part.body.len, part.body.ptr));
-                    }
-                    if (!mg_vcmp(&part.name, "password")) {
-                        password = mg_mprintf("%.*s", (int) part.body.len, part.body.ptr);
-                        MG_INFO(("Pass: [%.*s]", (int) part.body.len, part.body.ptr));
-                    }
-                }
-                mg_http_reply(c, 200, print_header(), "{%M}",
-                              api_auth, db, username, password);
-                free(username);
-                free(password);
-            }
-            break;
+            if (!mg_vcasecmp(&hm->method, "GET")) goto v3_announce;
+            else goto v3_login;
         case check:
-            break;
+            MG_DEBUG(("Token: [%s]", pass));
+            if (verify_token(pass)) goto v3_authorized; else goto v3_unauthorized;
         case secure:
-            break;
+            if (verify_token(pass)) goto v3_secret; else goto v3_unauthorized;
         default:
-            mg_http_reply(c, 401, print_header(), "{%Q:\"%s\"}",
-                          "status", "401 Unauthorized");
-            break;
+            goto v3_not_found;
     }
+
+    // Response for API v3 from Endpoint =======================================================================
+    v3_announce:
+    mg_http_reply(c, 200, print_header(), "{%Q:%Q}",
+                  "message", "[v3] -> 200 Login with Post Request");
+    return;
+    v3_login:
+    while ((ofs = mg_http_next_multipart(hm->body, ofs, &part)) > 0) {
+        if (!mg_vcmp(&part.name, "username")) {
+            mg_snprintf(user, sizeof(user), "%.*s", (int) part.body.len, part.body.ptr);
+        }
+        if (!mg_vcmp(&part.name, "password")) {
+            mg_snprintf(pass, sizeof(pass), "%.*s", (int) part.body.len, part.body.ptr);
+        }
+        MG_INFO(("%.*s: [%.*s]",
+                (int) part.name.len, part.name.ptr, (int) part.body.len, part.body.ptr));
+    }
+    mg_http_reply(c, 200, print_header(), "{%M}",
+                  api_auth, db, user, pass);
+    return;
+    v3_authorized:
+    mg_http_reply(c, 200, print_header(), "{%Q:%Q}",
+                  "message", "[v3] -> 200 JWT Token validation successful!");
+    return;
+    v3_secret:
+    mg_http_reply(c, 200, print_header(), "{%Q:%Q}",
+                  "s3cr5t", SECRET);
+    return;
+    v3_unauthorized:
+    mg_http_reply(c, 401, print_header(), "{%Q:\"%s\"}",
+                  "status", "[v3] -> 401 Unauthorized");
+    return;
+    v3_not_found:
+    mg_http_reply(c, 404, print_header(), "{%Q:%Q}",
+                  "status", "[v3] -> 404 Not found");
 }
 
 void router(struct mg_connection *c, int event, void *event_data, void *db) {
@@ -267,7 +284,7 @@ void router(struct mg_connection *c, int event, void *event_data, void *db) {
         MG_INFO(("%.*s %.*s %.*s",
                 (int) hm->method.len, hm->method.ptr,
                 (int) hm->uri.len, hm->uri.ptr,
-                (int) hm->body.len, hm->body.ptr));
+                (int) hm->query.len, hm->query.ptr));
 
         if (mg_http_match_uri(hm, "/api/v1/*")) {
             if (!mg_vcasecmp(&hm->method, "GET")) {
@@ -283,11 +300,11 @@ void router(struct mg_connection *c, int event, void *event_data, void *db) {
 
         router_method_not_allowed:
         mg_http_reply(c, 405, print_header(),
-                      "{%Q:%Q}", "status", "405 Method not allowed");
+                      "{%Q:%Q}", "status", "[router] -> 405 Method not allowed");
         return;
         router_not_found:
         mg_http_reply(c, 404, print_header(),
-                      "{%Q:%Q}", "status", "404 Not found");
+                      "{%Q:%Q}", "status", "[router] -> 404 Not found");
         return;
     }
 }

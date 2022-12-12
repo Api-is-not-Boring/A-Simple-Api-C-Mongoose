@@ -50,7 +50,7 @@ char *generate_token(void) {
     return jwt;
 }
 
-void verify_token(char *token) {
+bool verify_token(char *token) {
     struct l8w8jwt_decoding_params params;
     l8w8jwt_decoding_params_init(&params);
 
@@ -75,7 +75,9 @@ void verify_token(char *token) {
 
     if (decode_result == L8W8JWT_SUCCESS && validation_result == L8W8JWT_VALID) {
         MG_INFO(("JWT HS512 token validation successful!"));
+        return true;
     } else {
         MG_ERROR(("Error while decoding JWT"));
+        return false;
     }
 }
