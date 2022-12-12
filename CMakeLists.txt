@@ -40,6 +40,7 @@ FetchContent_MakeAvailable(mongoose)
 # Add the Mongoose Library ========================================================
 add_library(mongoose INTERFACE)
 target_sources(mongoose INTERFACE ${mongoose_SOURCE_DIR}/mongoose.c)
+target_compile_options(mongoose INTERFACE -DMG_ARCH=MG_ARCH_UNIX)
 target_include_directories(mongoose INTERFACE ${mongoose_SOURCE_DIR})
 
 # Add the Source directory ========================================================
