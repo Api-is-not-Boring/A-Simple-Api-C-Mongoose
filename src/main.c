@@ -1,6 +1,7 @@
 #include <signal.h>
 #include "model.h"
 #include "router.h"
+#include "auth.h"
 
 
 // Handle interrupts, like Ctrl-C
@@ -17,6 +18,8 @@ int main(void) {
     mg_log_set(MG_LL_INFO);                      // Set log level
     db_init(&db);                                  // Initialize database
     mg_mgr_init(&mgr);                            // Initialise event manager
+    char *token = generate_token();                              // Generate JWT
+    verify_token(token);                          // Verify JWT
     if (mg_http_listen(&mgr, s_http_addr, router, db) == NULL) {
         MG_ERROR(("Cannot listen on %s.", s_http_addr));
         db_close(db);

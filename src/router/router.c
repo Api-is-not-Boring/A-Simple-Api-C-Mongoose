@@ -1,6 +1,7 @@
 #include "router.h"
 #include "project.h"
 #include "model.h"
+#include "auth.h"
 
 
 static void print_datetime(mg_pfn_t out, void *ptr) {
@@ -221,6 +222,45 @@ static void api_v2(struct mg_connection *c, struct mg_http_message *hm, sqlite3 
                   "{%Q:%Q}", "status", "500 Internal server error");
 }
 
+void api_v3(struct mg_connection *c, struct mg_http_message *hm, sqlite3 *db) {
+    struct mg_str endpoint[1];
+    mg_match(hm->uri, API_V3, endpoint);
+    switch (find_enum_index(&endpoint[0], v3_endpoint)) {
+        case auth:
+            if (!mg_vcasecmp(&hm->method, "GET")) {
+                mg_http_reply(c, 200, print_header(), "{%Q:%Q}",
+                              "message", "Login with Post Request");
+            } else {
+                char *username, *password;
+                struct mg_http_part part;
+                size_t ofs = 0;
+                while ((ofs = mg_http_next_multipart(hm->body, ofs, &part)) > 0) {
+                    if (!mg_vcmp(&part.name, "username")) {
+                        username = mg_mprintf("%.*s", (int) part.body.len, part.body.ptr);
+                        MG_INFO(("User: [%.*s]", (int) part.body.len, part.body.ptr));
+                    }
+                    if (!mg_vcmp(&part.name, "password")) {
+                        password = mg_mprintf("%.*s", (int) part.body.len, part.body.ptr);
+                        MG_INFO(("Pass: [%.*s]", (int) part.body.len, part.body.ptr));
+                    }
+                }
+                mg_http_reply(c, 200, print_header(), "{%M}",
+                              api_auth, db, username, password);
+                free(username);
+                free(password);
+            }
+            break;
+        case check:
+            break;
+        case secure:
+            break;
+        default:
+            mg_http_reply(c, 401, print_header(), "{%Q:\"%s\"}",
+                          "status", "401 Unauthorized");
+            break;
+    }
+}
+
 void router(struct mg_connection *c, int event, void *event_data, void *db) {
     if (event == MG_EV_HTTP_MSG) {
         struct mg_http_message *hm = (struct mg_http_message *) event_data;
@@ -232,12 +272,16 @@ void router(struct mg_connection *c, int event, void *event_data, void *db) {
         if (mg_http_match_uri(hm, "/api/v1/*")) {
             if (!mg_vcasecmp(&hm->method, "GET")) {
                 api_v1(c, hm);
-            } else goto v1_method_not_allowed;
+            } else goto router_method_not_allowed;
         } else if (mg_http_match_uri(hm, "/api/v2/*") || mg_http_match_uri(hm, "/api/v2/*/*")) {
             api_v2(c, hm, db);
+        } else if (mg_http_match_uri(hm, "/api/v3/*")){
+            if (!mg_vcasecmp(&hm->method, "GET") || !mg_vcasecmp(&hm->method, "POST")) {
+                api_v3(c, hm, db);
+            } else goto router_method_not_allowed;
         } else goto router_not_found;
 
-        v1_method_not_allowed:
+        router_method_not_allowed:
         mg_http_reply(c, 405, print_header(),
                       "{%Q:%Q}", "status", "405 Method not allowed");
         return;

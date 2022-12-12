@@ -34,11 +34,25 @@ static const char *v1_endpoint[] = {
         FOREACH_V1_ENDPOINT(GENERATE_STRING)
 };
 
+#define API_V3 mg_str("/api/v3/*")
+#define FOREACH_V3_ENDPOINT(ENDPOINT) \
+    ENDPOINT(auth)                   \
+    ENDPOINT(check)                    \
+    ENDPOINT(secure)                  \
+
+typedef enum v3_enum {
+    FOREACH_V3_ENDPOINT(GENERATE_ENUM)
+} v3_enum_t;
+
+static const char *v3_endpoint[] = {
+        FOREACH_V3_ENDPOINT(GENERATE_STRING)
+};
+
 #define SERVER "Server: Mongoose\r\n"
 #define JSON_TYPE "application/json"
 #define JSON_TYPE_HEADER "Content-Type: "JSON_TYPE"; charset=utf-8\r\n"
 
-static const char *s_http_addr = "http://127.0.0.1:8000";
+static const char *s_http_addr = "http://0.0.0.0:8000";
 
 void router(struct mg_connection *c, int event, void *event_data, void *router_data);
 

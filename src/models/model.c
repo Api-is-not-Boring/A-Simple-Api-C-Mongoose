@@ -14,6 +14,13 @@ char *sql = "DROP TABLE IF EXISTS Cars;"
             "INSERT INTO Cars (Name, Price) VALUES('Hummer', 41400);"
             "INSERT INTO Cars (Name, Price) VALUES('Volkswagen', 21600);";
 
+char *sql_auth = "DROP TABLE IF EXISTS Users;"
+                 "CREATE TABLE Users("
+                 "Id    integer constraint User_pk primary key autoincrement,"
+                 "Username  TEXT not null on conflict abort,"
+                 "Password  TEXT not null on conflict abort);"
+                 "INSERT INTO Users (Username, Password) VALUES('admin', 'password');";
+
 void db_init(sqlite3 **db) {
     char *err_msg = 0;
     int rc = sqlite3_open(":memory:", db);
@@ -25,6 +32,15 @@ void db_init(sqlite3 **db) {
     MG_INFO(("Sqlite version : %s", sqlite3_libversion()));
 
     rc = sqlite3_exec(*db, sql, 0, 0, &err_msg);
+
+    if (rc != SQLITE_OK ) {
+        MG_ERROR(("SQL error: %s\n", err_msg));
+        sqlite3_free(err_msg);
+        sqlite3_close(*db);
+        exit(EXIT_FAILURE);
+    }
+
+    rc = sqlite3_exec(*db, sql_auth, 0, 0, &err_msg);
 
     if (rc != SQLITE_OK ) {
         MG_ERROR(("SQL error: %s\n", err_msg));

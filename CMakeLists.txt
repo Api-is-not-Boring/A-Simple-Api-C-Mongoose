@@ -12,6 +12,9 @@ set(CMAKE_C_STANDARD 23)
 set(CMAKE_C_EXTENSIONS OFF)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 
+string(RANDOM LENGTH 32 ALPHABET 0123456789abcdef SECRET)
+message(STATUS "Project secret: ${SECRET}")
+
 include(FindGit)
 if(GIT_FOUND)
     message(STATUS "Git found: ${GIT_EXECUTABLE}")
@@ -34,6 +37,7 @@ include(FetchContent)
 FetchContent_Declare(
         mongoose
         GIT_REPOSITORY https://github.com/cesanta/mongoose.git
+        GIT_PROGRESS TRUE
 )
 FetchContent_MakeAvailable(mongoose)
 
@@ -41,6 +45,15 @@ FetchContent_MakeAvailable(mongoose)
 add_library(mongoose INTERFACE)
 target_sources(mongoose INTERFACE ${mongoose_SOURCE_DIR}/mongoose.c)
 target_include_directories(mongoose INTERFACE ${mongoose_SOURCE_DIR})
+
+# Fetch l8w8jwt Repository ========================================================
+FetchContent_Declare(
+        l8w8jwt
+        GIT_REPOSITORY https://github.com/GlitchedPolygons/l8w8jwt.git
+        GIT_SUBMODULES_RECURSE TRUE
+        GIT_PROGRESS TRUE
+)
+FetchContent_MakeAvailable(l8w8jwt)
 
 # Add the Source directory ========================================================
 add_subdirectory(src)
