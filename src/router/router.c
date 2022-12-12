@@ -102,7 +102,6 @@ static void api_v2(struct mg_connection *c, struct mg_http_message *hm, sqlite3 
                         if (db_update_car(db, id, name, (int) price)) goto v2_update_car_with_query;
                         else goto v2_internal_error;
                     } else goto v2_bad_request;
-                    break;
                     case DELETE:
                     if (db_delete_car(db, id)) goto v2_delete_car_with_query; else goto v2_internal_error;
                 default:
