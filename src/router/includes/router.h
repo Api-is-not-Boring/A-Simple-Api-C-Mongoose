@@ -35,7 +35,8 @@ static const char *v1_endpoint[] = {
 };
 
 #define SERVER "Server: Mongoose\r\n"
-#define JSON_TYPE "Content-Type: application/json; charset=utf-8\r\n"
+#define JSON_TYPE "application/json"
+#define JSON_TYPE_HEADER "Content-Type: "JSON_TYPE"; charset=utf-8\r\n"
 
 static const char *s_http_addr = "http://0.0.0.0:8000";
 

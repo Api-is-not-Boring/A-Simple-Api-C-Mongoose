@@ -115,7 +115,6 @@ void db_get_car_by_id(mg_pfn_t out, void *ptr, va_list *ap) {
     sqlite3_prepare_v2(db, sql_select, -1, &res, 0);
     sqlite3_bind_int(res, 1, id);
     int step = sqlite3_step(res);
-    MG_INFO(("step = %d", step));
     if (step == SQLITE_ROW) {
         mg_xprintf(out, ptr, "%Q:{%Q:%d,%Q:%Q,%Q:%d}",
                    "car",
