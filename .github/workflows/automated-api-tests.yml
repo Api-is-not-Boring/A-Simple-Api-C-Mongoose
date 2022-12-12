@@ -30,16 +30,11 @@ jobs:
       # Build your program with the given configuration
       run: cmake --build ${{github.workspace}}/build --target A_Simple_Api_C_Mongoose
  
- jobs:
-  automated-api-tests:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - name: Install Postman CLI
-        run: |
-          curl -o- "https://dl-cli.pstmn.io/install/linux64.sh" | sh
-      - name: Login to Postman CLI
-        run: postman login --with-api-key ${{ secrets.POSTMAN_API_KEY }}
-      - name: Run API tests
-        run: |
-          postman collection run "7779863-874f5270-9a2e-448e-a963-87f8b9b0cbbd" -e "7779863-a2096246-922a-440d-9863-d540e8ff461d"
+    - name: Install Postman CLI
+      run: |
+        curl -o- "https://dl-cli.pstmn.io/install/linux64.sh" | sh
+    - name: Login to Postman CLI
+      run: postman login --with-api-key ${{ secrets.POSTMAN_API_KEY }}
+    - name: Run API tests
+      run: |
+        postman collection run "7779863-874f5270-9a2e-448e-a963-87f8b9b0cbbd" -e "7779863-a2096246-922a-440d-9863-d540e8ff461d"
