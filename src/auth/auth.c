@@ -1,5 +1,5 @@
+#include <sqlite3.h>
 #include "auth.h"
-#include "model.h"
 #include "l8w8jwt/encode.h"
 #include "l8w8jwt/decode.h"
 #include "project.h"

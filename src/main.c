@@ -1,4 +1,5 @@
 #include <signal.h>
+#include "mongoose.h"
 #include "model.h"
 #include "router.h"
 #include "auth.h"

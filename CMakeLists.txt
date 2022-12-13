@@ -9,7 +9,7 @@ project("A Simple Api C Mongoose"
         )
 
 set(CMAKE_C_STANDARD 23)
-set(CMAKE_C_EXTENSIONS OFF)
+set(CMAKE_C_EXTENSIONS ON)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 
 string(RANDOM LENGTH 32 ALPHABET 0123456789abcdef SECRET)
@@ -32,6 +32,14 @@ endif()
 
 message(STATUS "Git hash is ${GIT_HASH}")
 
+# Add Sqlite3 library =============================================================
+include(FindSQLite3)
+if(SQLITE3_FOUND)
+    message(STATUS "SQLite3 found: v${SQLite3_VERSION}")
+else()
+    message(FATAL_ERROR "SQLite3 not found")
+endif()
+
 # Fetch Mongooses Repository ======================================================
 include(FetchContent)
 FetchContent_Declare(
@@ -39,21 +47,11 @@ FetchContent_Declare(
         GIT_REPOSITORY https://github.com/cesanta/mongoose.git
         GIT_PROGRESS TRUE
 )
+
+# Clone Repository ================================================================
 FetchContent_MakeAvailable(mongoose)
-
-# Add the Mongoose Library ========================================================
-add_library(mongoose INTERFACE)
-target_sources(mongoose INTERFACE ${mongoose_SOURCE_DIR}/mongoose.c)
-target_include_directories(mongoose INTERFACE ${mongoose_SOURCE_DIR})
-
-# Fetch l8w8jwt Repository ========================================================
-FetchContent_Declare(
-        l8w8jwt
-        GIT_REPOSITORY https://github.com/GlitchedPolygons/l8w8jwt.git
-        GIT_SUBMODULES_RECURSE TRUE
-        GIT_PROGRESS TRUE
-)
-FetchContent_MakeAvailable(l8w8jwt)
+set(MONGOOSE_INCLUDE_DIR ${mongoose_SOURCE_DIR})
+message(STATUS "Mongoose include dir: ${MONGOOSE_INCLUDE_DIR}")
 
 # Add the Source directory ========================================================
 add_subdirectory(src)
