@@ -92,6 +92,7 @@ static void api_v2(struct mg_connection *c, struct mg_http_message *hm, sqlite3 
         // Request Methods for API v2 with Query Parameter
         if (hm->query.len) {
             struct mg_str v = mg_http_var(hm->query, mg_str("id"));
+            if (mg_strstr(v, mg_str(".")) != NULL) goto v2_bad_request;
             int id = v.ptr == NULL ? 0 : (int) strtol(v.ptr, &end, 10);
             if (!db_car_is_existed(db, id)) goto v2_not_found;
             switch (find_enum_index(&hm->method, http_method)) {
@@ -136,6 +137,7 @@ static void api_v2(struct mg_connection *c, struct mg_http_message *hm, sqlite3 
         }
     }
     if (mg_match(hm->uri, mg_str("/api/v2/cars/*"), endpoint)) {
+        if (mg_strstr(endpoint[0], mg_str(".")) != NULL) goto v2_bad_request;
         int id = (int) strtol(endpoint[0].ptr, &end, 10);
         if (db_car_is_existed(db, id)) {
             switch (find_enum_index(&hm->method, http_method)) {
