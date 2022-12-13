@@ -5,7 +5,6 @@ on:
     branches: [ "main" ]
 
 env:
-  # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
   BUILD_TYPE: Debug
 
 jobs:
@@ -17,16 +16,16 @@ jobs:
 
     - name: Get latest CMake and Ninja
       uses: lukka/get-cmake@latest
-      
+
     - name: Configure CMake
       run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -G Ninja -S ${{github.workspace}}
 
     - name: Build
       run: cmake --build ${{github.workspace}}/build --target A_Simple_Api_C_Mongoose
-      
+
     - name: Run Api
       run: ${{github.workspace}}/build/src/A_Simple_Api_C_Mongoose &
- 
+
     - name: Install Postman CLI
       run: |
         curl -o- "https://dl-cli.pstmn.io/install/linux64.sh" | sh
