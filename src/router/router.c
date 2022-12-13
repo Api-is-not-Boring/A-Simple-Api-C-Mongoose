@@ -49,6 +49,7 @@ static void print_stats(mg_pfn_t out, void *ptr, va_list *ap) {
 }
 
 static int find_enum_index(struct mg_str *endpoint,const char *v[]) {
+    if (endpoint->len == 0) return -1;
     for (int i = 0; i < sizeof(&v) / sizeof(*v[0]); i++) {
         if (v[i] != NULL && !mg_vcmp(endpoint, v[i])) {
             return i;
@@ -268,6 +269,7 @@ void api_v3(struct mg_connection *c, struct mg_http_message *hm, sqlite3 *db) {
     v3_secret:
     mg_http_reply(c, 200, print_header(), "{%Q:%Q}",
                   "s3cr5t", SECRET);
+    // Error Response for API v3 ==============================================================================
     return;
     v3_unauthorized:
     mg_http_reply(c, 401, print_header(), "{%Q:\"%s\"}",
@@ -286,6 +288,7 @@ void router(struct mg_connection *c, int event, void *event_data, void *db) {
                 (int) hm->uri.len, hm->uri.ptr,
                 (int) hm->query.len, hm->query.ptr));
 
+        if (mg_http_match_uri(hm, "/api/*/")) goto router_redirect;
         if (mg_http_match_uri(hm, "/api/v1/*")) {
             if (!mg_vcasecmp(&hm->method, "GET")) {
                 api_v1(c, hm);
@@ -298,13 +301,17 @@ void router(struct mg_connection *c, int event, void *event_data, void *db) {
             } else goto router_method_not_allowed;
         } else goto router_not_found;
 
-        router_method_not_allowed:
-        mg_http_reply(c, 405, print_header(),
-                      "{%Q:%Q}", "status", "[router] -> 405 Method not allowed");
+        router_redirect:
+        mg_http_reply(c, 301, REDIRECT_HEADER,
+                      "{%Q:%Q}", "status", "[router] -> 301 Redirect");
         return;
         router_not_found:
         mg_http_reply(c, 404, print_header(),
                       "{%Q:%Q}", "status", "[router] -> 404 Not found");
+        return;
+        router_method_not_allowed:
+        mg_http_reply(c, 405, print_header(),
+                      "{%Q:%Q}", "status", "[router] -> 405 Method not allowed");
         return;
     }
 }
