@@ -50,7 +50,7 @@ static const char *v3_endpoint[] = {
 
 #define SERVER "Server: Mongoose\r\n"
 #define JSON_TYPE "application/json"
-#define JSON_TYPE_HEADER "Content-Type: "JSON_TYPE"; charset=utf-8\r\n"
+#define JSON_TYPE_HEADER "Content-Type: "JSON_TYPE"\r\n"
 #define REDIRECT_HEADER SERVER"Location: /api/v1/info\r\n"JSON_TYPE_HEADER
 
 static const char *s_http_addr = "http://0.0.0.0:8000";
