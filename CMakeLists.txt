@@ -52,6 +52,8 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(mongoose)
 set(MONGOOSE_INCLUDE_DIR ${mongoose_SOURCE_DIR})
 message(STATUS "Mongoose include dir: ${MONGOOSE_INCLUDE_DIR}")
+add_library(mongoose ${mongoose_SOURCE_DIR}/mongoose.c ${mongoose_SOURCE_DIR}/mongoose.h)
+target_include_directories(mongoose PUBLIC ${mongoose_SOURCE_DIR})
 
 # Add the Source directory ========================================================
 add_subdirectory(src)

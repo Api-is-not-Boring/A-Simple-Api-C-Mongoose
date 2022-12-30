@@ -4,7 +4,6 @@
 #include "router.h"
 #include "auth.h"
 
-
 // Handle interrupts, like Ctrl-C
 volatile sig_atomic_t s_signum;
 static void signal_handler(int signum) {
@@ -12,6 +11,11 @@ static void signal_handler(int signum) {
 }
 
 int main(void) {
+    mg_bcrypt_salt salt;
+    mg_bcrypt_hash hash;
+    mg_bcrypt_gen_salt(salt);
+    mg_bcrypt_hash_pw("password", salt, hash);
+    MG_INFO(("Hash: %s", hash));
     struct mg_mgr mgr;                            // Event manager
     sqlite3 *db;                                     // Database
     signal(SIGINT, signal_handler);

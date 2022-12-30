@@ -1,4 +1,5 @@
 #include "model.h"
+#include "auth.h"
 
 char *sql = "DROP TABLE IF EXISTS Cars;"
             "CREATE TABLE Cars("
@@ -18,8 +19,7 @@ char *sql_auth = "DROP TABLE IF EXISTS Users;"
                  "CREATE TABLE Users("
                  "Id    integer constraint User_pk primary key autoincrement,"
                  "Username  TEXT not null on conflict abort,"
-                 "Password  TEXT not null on conflict abort);"
-                 "INSERT INTO Users (Username, Password) VALUES('admin', 'password');";
+                 "Password  TEXT not null on conflict abort);";
 
 void db_init(sqlite3 **db) {
     char *err_msg = 0;
@@ -41,6 +41,21 @@ void db_init(sqlite3 **db) {
     }
 
     rc = sqlite3_exec(*db, sql_auth, 0, 0, &err_msg);
+
+    if (rc != SQLITE_OK ) {
+        MG_ERROR(("SQL error: %s\n", err_msg));
+        sqlite3_free(err_msg);
+        sqlite3_close(*db);
+        exit(EXIT_FAILURE);
+    }
+
+    mg_bcrypt_salt salt;
+    mg_bcrypt_hash hash;
+    mg_bcrypt_gen_salt(salt);
+    mg_bcrypt_hash_pw("password", salt, hash);
+    char *sql_create_user = mg_mprintf("INSERT INTO Users (Username, Password) VALUES('admin', '%s');", hash);
+    MG_INFO(("%s", sql_create_user));
+    rc = sqlite3_exec(*db, sql_create_user, 0, 0, &err_msg);
 
     if (rc != SQLITE_OK ) {
         MG_ERROR(("SQL error: %s\n", err_msg));
