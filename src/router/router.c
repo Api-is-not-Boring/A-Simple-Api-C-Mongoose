@@ -40,7 +40,7 @@ static void print_stats(mg_pfn_t out, void *ptr, va_list *ap) {
                    comma,
                    "id", t->id,
                    "protocol", t->is_udp ? "UDP" : "TCP",
-                   "type", t->is_listening  ? "LISTENING": t->is_accepted ? "ACCEPTED ": "CONNECTED",
+                   "type", t->is_listening  ? "LISTENING": t->is_accepted ? "ACCEPTED ": "ESTABLISHED",
                    "local", 4, &t->loc.ip, mg_ntohs(t->loc.port),
                    "remote", 4, &t->rem.ip, mg_ntohs(t->rem.port)
         );
