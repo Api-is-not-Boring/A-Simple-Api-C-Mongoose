@@ -12,7 +12,7 @@ void mg_bcrypt_gen_salt(mg_bcrypt_salt salt);
 
 void mg_bcrypt_hash_pw(const char *password, mg_bcrypt_salt salt, mg_bcrypt_hash hash);
 
-bool mg_bcrypt_verify_pw(const char *password, mg_bcrypt_hash hash);
+int mg_bcrypt_verify_pw(const char *password, mg_bcrypt_hash hash);
 
 bool api_auth(mg_pfn_t out, void *ptr, va_list *ap);
 

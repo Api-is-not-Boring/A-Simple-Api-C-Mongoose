@@ -1,4 +1,4 @@
-add_library(auth STATIC auth.c)
+add_library(auth STATIC auth.c bcrypt.c)
 
 # Fetch l8w8jwt Repository ========================================================
 include(FetchContent)
