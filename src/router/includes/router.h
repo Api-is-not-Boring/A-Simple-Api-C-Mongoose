@@ -55,8 +55,6 @@ static const char *v3_endpoint[] = {
 
 static const char *s_http_addr = "http://0.0.0.0:8000";
 
-static const char *name_part[] = {"username", "password"};
-
 void router(struct mg_connection *c, int event, void *event_data, void *router_data);
 
 #endif //A_SIMPLE_API_C_MONGOOSE_ROUTER_H
