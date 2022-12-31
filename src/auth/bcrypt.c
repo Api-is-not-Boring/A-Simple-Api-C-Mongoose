@@ -4,7 +4,7 @@
 void mg_bcrypt_gen_salt(mg_bcrypt_salt salt) {
     char random_buf[16];
     mg_random(random_buf, sizeof(random_buf));
-    crypt_gensalt_rn("$2a$", 12, random_buf, 16,
+    crypt_gensalt_rn("$2b$", 12, random_buf, 16,
                      salt, BCRYPT_HASH_SIZE);
 };
 
