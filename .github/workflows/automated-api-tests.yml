@@ -24,17 +24,17 @@ jobs:
       id: cached-cmake-configure
       uses: actions/cache@v3.2.2
       with:
-        path: build
-        key: venv-${{ runner.os }}-${{ steps.get-cmake.outputs.cmake-version }}
+        path: ~/build
+        key: venv-${{ runner.os }}--${{ hashFiles('~/build/CMakeCache.txt') }}
 
     - name: Configure CMake
-      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -G Ninja -S ${{github.workspace}}
+      run: cmake -B ~/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -G Ninja -S ~/build
 
     - name: Build
-      run: cmake --build ${{github.workspace}}/build --target A_Simple_Api_C_Mongoose
+      run: cmake --build ~/build --target A_Simple_Api_C_Mongoose
 
     - name: Run Api
-      run: ${{github.workspace}}/build/src/A_Simple_Api_C_Mongoose &
+      run: ~/build/src/A_Simple_Api_C_Mongoose &
 
     - if: matrix.os == 'ubuntu-latest'
       name: Install Postman CLI Linux
