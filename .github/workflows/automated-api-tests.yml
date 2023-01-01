@@ -28,7 +28,7 @@ jobs:
         key: venv-${{ runner.os }}--${{ hashFiles('~/build/CMakeCache.txt') }}
 
     - name: Configure CMake
-      run: cmake -B ~/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -G Ninja -S ~/build
+      run: cmake -B ~/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -G Ninja -S ${{github.workspace}}
 
     - name: Build
       run: cmake --build ~/build --target A_Simple_Api_C_Mongoose
