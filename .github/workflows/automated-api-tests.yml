@@ -25,7 +25,7 @@ jobs:
       uses: actions/cache@v3.2.2
       with:
         path: ~/build
-        key: venv-${{ runner.os }}--${{ hashFiles('~/build/CMakeCache.txt') }}
+        key: venv-${{ runner.os }}-${{ hashFiles('CMakeCache.txt') }}
 
     - name: Configure CMake
       run: cmake -B ~/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -G Ninja -S ${{github.workspace}}
