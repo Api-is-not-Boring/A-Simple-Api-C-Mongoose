@@ -12,19 +12,15 @@ jobs:
     strategy:
       matrix:
         os: [ "ubuntu-latest", "macos-latest" ]
+        include:
+          - os: "ubuntu-latest"
+            postman-cli: "https://dl-cli.pstmn.io/install/linux64.sh"
+          - os: "macos-latest"
+            postman-cli: "https://dl-cli.pstmn.io/install/osx_64.sh"
     runs-on: ${{ matrix.os }}
-
 
     steps:
     - uses: actions/checkout@v3
-    
-    - run: |
-        echo "POSTMAN_URL=https://dl-cli.pstmn.io/install/linux64.sh" >> $GITHUB_ENV
-      if: matrix.os == 'ubuntu-latest'
-      
-    - run: |
-        echo "POSTMAN_URL=https://dl-cli.pstmn.io/install/osx_64.sh" >> $GITHUB_ENV
-      if: matrix.os == 'macOS-latest'
 
     - name: Get latest CMake and Ninja
       uses: lukka/get-cmake@latest
@@ -40,7 +36,7 @@ jobs:
 
     - name: Install Postman CLI
       run: |
-        curl -o- ${{env.POSTMAN_URL}} | sh
+        curl -o- ${{matrix.postman-cli}} | sh
 
     - name: Login to Postman CLI
       run: postman login --with-api-key ${{ secrets.POSTMAN_API_KEY }}
