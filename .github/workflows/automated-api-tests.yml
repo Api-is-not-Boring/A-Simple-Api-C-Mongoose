@@ -14,36 +14,33 @@ jobs:
         os: [ "ubuntu-latest", "macos-latest" ]
     runs-on: ${{ matrix.os }}
 
+
     steps:
     - uses: actions/checkout@v3
+    
+    - run: |
+        echo "POSTMAN_URL=https://dl-cli.pstmn.io/install/linux64.sh" >> $GITHUB_ENV
+      if: matrix.os == 'ubuntu-latest'
+      
+    - run: |
+        echo "POSTMAN_URL=https://dl-cli.pstmn.io/install/osx_64.sh" >> $GITHUB_ENV
+      if: matrix.os == 'macOS-latest'
 
     - name: Get latest CMake and Ninja
       uses: lukka/get-cmake@latest
 
-    - name: Load cached venv
-      id: cached-cmake-configure
-      uses: actions/cache@v3.2.2
-      with:
-        path: ~/build
-        key: venv-${{ runner.os }}-${{ hashFiles('*/CMakeCache.txt') }}
-
     - name: Configure CMake
-      run: cmake -B ~/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -G Ninja -S ${{github.workspace}}
+      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -G Ninja -S ${{github.workspace}}
 
     - name: Build
-      run: cmake --build ~/build --target A_Simple_Api_C_Mongoose
+      run: cmake --build ${{github.workspace}}/build --target A_Simple_Api_C_Mongoose
 
     - name: Run Api
-      run: ~/build/src/A_Simple_Api_C_Mongoose &
+      run: ${{github.workspace}}/build/src/A_Simple_Api_C_Mongoose &
 
-    - if: matrix.os == 'ubuntu-latest'
-      name: Install Postman CLI Linux
+    - name: Install Postman CLI
       run: |
-        curl -o- "https://dl-cli.pstmn.io/install/linux64.sh" | sh
-    - if: matrix.os == 'macOS-latest'
-      name: Install Postman CLI MacOS
-      run: |
-        curl -o- "https://dl-cli.pstmn.io/install/osx_64.sh" | sh
+        curl -o- ${{env.POSTMAN_URL}} | sh
 
     - name: Login to Postman CLI
       run: postman login --with-api-key ${{ secrets.POSTMAN_API_KEY }}
