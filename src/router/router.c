@@ -36,11 +36,11 @@ static void print_stats(mg_pfn_t out, void *ptr, va_list *ap) {
     struct mg_connection *c = va_arg(*ap, struct mg_connection *);
     const char *comma = "";
     for (struct mg_connection *t = c->mgr->conns; t != NULL; t = t->next) {
-        mg_xprintf(out, ptr, "%s{%Q:\"%lu\", %Q:\"%s\", %Q:\"%s\", %Q:\"%I:%u\", %Q:\"%I:%u\"}",
+        mg_xprintf(out, ptr, "%s{%Q:%lu, %Q:\"%s\", %Q:\"%s\", %Q:\"%I:%u\", %Q:\"%I:%u\"}",
                    comma,
                    "id", t->id,
                    "protocol", t->is_udp ? "UDP" : "TCP",
-                   "type", t->is_listening  ? "LISTENING": t->is_accepted ? "ACCEPTED ": "ESTABLISHED",
+                   "type", t->is_listening  ? "LISTENING": t->is_accepted ? "ACCEPTED": "ESTABLISHED",
                    "local", 4, &t->loc.ip, mg_ntohs(t->loc.port),
                    "remote", 4, &t->rem.ip, mg_ntohs(t->rem.port)
         );
