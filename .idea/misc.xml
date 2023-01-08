@@ -1,4 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="CMakeWorkspace" PROJECT_DIR="$PROJECT_DIR$" />
+  <component name="XMakeProjectSettings">
+    <option name="currentArchitecture" value="arm64" />
+    <option name="currentMode" value="debug" />
+    <option name="workingDirectory" value="$PROJECT_DIR$" />
+  </component>
 </project>
